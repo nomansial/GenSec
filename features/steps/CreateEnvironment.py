@@ -9,9 +9,13 @@ def step_impl(context, env_name, env_description):
     """Prepare request payload for positive or negative case"""
     config = getConfig()
     context.url = f"{config['API']['BaseURL']}/environments"
+
+    # Read API key from config
+    api_key = config['API'].get('APIKey', '')
+
     context.headers = {
         'Content-Type': 'application/json',
-        'x-api-key': ''
+        'x-api-key': api_key
     }
 
     # Convert 'None' placeholder to empty string
@@ -38,7 +42,8 @@ def step_impl(context):
     )
 
 
-@then(u'code should be {status_code:d}')
+@then(u''
+      u'code should be {status_code:d}')
 def step_impl(context, status_code):
     """Generic status code check"""
     actual_status_code = context.response.status_code

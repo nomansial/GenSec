@@ -11,7 +11,7 @@ def step_impl(context, env_name, env_description):
     context.url = f"{config['API']['BaseURL']}/environments"
     context.headers = {
         'Content-Type': 'application/json',
-        'x-api-key': 'AIzaSyCNI5CQeoAAfvQB07m2KGqDXLlgQKMg-aM'
+        'x-api-key': ''
     }
 
     # Convert 'None' placeholder to empty string

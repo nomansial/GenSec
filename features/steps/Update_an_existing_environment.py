@@ -3,10 +3,60 @@ import logging
 from behave import given, when, then
 from assertpy import assert_that
 from utilities.configurations import getConfig
+from Delete_an_environment_and_associated_data import step_impl
+
 
 # Set up logging to print out the response in the console
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+########################### Scenario: Verify Update Environment API updates the environment successfully ###########################
+
+@when(u'user sends the update API call with new environment details')
+def step_impl(context):
+    """Send PUT request to update environment details"""
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/environments/{context.env_id}"
+
+    api_key = "AIzaSyCNI5CQeoAAfvQB07m2KGqDXLlgQKMg-aM"  # API key passed in the request header
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the request body to update the environment
+    payload = {
+        "env_id": context.env_id,
+        "env_name": "new updated name",
+        "env_description": "new updated description"
+    }
+
+    # Send the PUT request to update the environment
+    context.response = requests.put(context.url, json=payload, headers=context.headers)
+
+    # Log the Update Environment API response
+    logger.info(f"Update Environment API Response: {context.response.text}")
+    print(f"Update Environment API Response: {context.response.text}")  # Fallback to print in console
+
+
+@then(u'the status code returned should be 200 for the updated environment')
+def step_impl(context):
+    """Verify that the status code for the update request is 200"""
+    logger.info(f"Expected Status Code: 200, Got: {context.response.status_code}")
+    assert_that(context.response.status_code).is_equal_to(200)
+
+
+@then(u'the response should contain a "status" of "Updated"')
+def step_impl(context):
+    """Verify that the response contains 'status' as 'Updated'"""
+    response_json = context.response.json()
+    logger.info(f"Expected status: 'Updated', Got: {response_json.get('status')}")
+    assert_that(response_json.get("status")).is_equal_to("Updated")
+
+
+
+########################### Scenario Outline: Verify Update Environment API when environment is not found (Negative Case) ###########################
 
 @given(u'User sends PUT request to update environment details with an invalid env_id "{env_id}"')
 def step_impl(context, env_id):

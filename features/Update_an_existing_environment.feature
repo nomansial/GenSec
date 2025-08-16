@@ -1,5 +1,16 @@
 Feature: Update Environment API
 
+
+  Feature: Update Environment API
+
+  @Test
+  Scenario: Verify Update Environment API updates the environment successfully
+    Given User fetches env_id from Create Environment API
+    When user sends the update API call with new environment details
+    Then the status code returned should be 200 for the updated environment
+    And the response should contain a "status" of "Updated"
+    And the response should contain the correct "env_id"
+
   @Test
   Scenario Outline: Verify Update Environment API when environment is not found (Negative Case)
     Given User sends PUT request to update environment details with an invalid env_id "<env_id>"
@@ -12,3 +23,4 @@ Feature: Update Environment API
       | env_id                               |
       | ab809075-108f-4f67-2fb5-dc909ed60692 |
       | None                                 |
+

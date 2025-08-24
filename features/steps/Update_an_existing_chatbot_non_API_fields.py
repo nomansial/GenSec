@@ -3,12 +3,97 @@ import logging
 from behave import given, when, then
 from assertpy import assert_that
 from utilities.configurations import getConfig
+import time
 
 # Set up logging to print out the response in the console
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ########################### Scenario: Verify PUT request successfully updates chatbot details ###########################
+
+@given(u'User sends PUT request to update chatbot details with chatbot_name "{chatbot_name}", chatbot_description "{chatbot_description}", and env_id "{env_id}"')
+def step_impl(context, chatbot_name, chatbot_description, env_id):
+    """Create chatbot, wait until status is AVAILABLE, then send PUT request to update it"""
+    import time
+
+    config = getConfig()
+    base_url = config['API']['BaseURL']
+    api_key = config['API']['APIKey']
+
+    # POST request to create chatbot
+    context.url = f"{base_url}/chatbots"
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    chatbot_name = "QA Automation"
+    chatbot_description = "System testing please ignore"
+    env_id = "f0b53f20-5ebe-4132-cbea-68725ef2c5c8"
+
+    payload = {
+        "env_id": env_id,
+        "chatbot_name": chatbot_name,
+        "api_endpoint": "Jr.lzPApNRNNQR:n1Xy6WyKDPWvA@1eR5t#302OYb%lnp4ehZGwDWPoaeEDF7Nnt_hDPuK9Po2crHTiqXd-zVT9rHwiVXBEg@QvomKrjMHbJIJ8-mIswCmUY0+eYO4ZlqAg4YDUcbF@5zMaS.fozhq",
+        "api_secret": "wVyB2",
+        "chatbot_url": "www.t@TiGfZIdBeat:+B5XsEP4ZPRB0ZB1UI-dcArK64u@6hhfa#D8cZ+LyR:Nd0Z-glOD9q7qDSWPmJdVEx.aDTK3%#9itUKB4v7xikDUBbG~pA=qD9rVjfz6hAxgsOjZBWIkp%jyLpZj#caaQrBL",
+        "chatbot_description": chatbot_description
+    }
+
+    context.response = requests.post(context.url, json=payload, headers=context.headers)
+    logger.info(f"Create Chatbot API Response: {context.response.text}")
+    print(f"Create Chatbot API Response: {context.response.text}")
+
+    chatbot_id = context.response.json().get("chatbot_id")
+    assert chatbot_id is not None, "chatbot_id not found in response"
+
+    # Poll until status becomes AVAILABLE
+    status_url = f"{base_url}/chatbots/{chatbot_id}"
+    max_retries = 50
+    wait_seconds = 10
+
+    for attempt in range(max_retries):
+        status_response = requests.get(status_url, headers={'x-api-key': api_key})
+        status = status_response.json().get("status")
+        logger.info(f"Attempt {attempt+1}: Chatbot status = {status}")
+        print(f"Attempt {attempt+1}: Chatbot status = {status}")
+
+        if status == "AVAILABLE":
+            # Send PUT request to update chatbot details
+            context.url = f"{base_url}/chatbots/{chatbot_id}"
+            context.request_body = {
+                "chatbot_id": chatbot_id,
+                "chatbot_name": chatbot_name,
+                "chatbot_description": chatbot_description,
+                "env_id": env_id
+            }
+
+            context.response = requests.put(context.url, json=context.request_body, headers=context.headers)
+            logger.info(f"PUT Chatbot API Response: {context.response.text}")
+            print(f"PUT Chatbot API Response: {context.response.text}")
+            return
+
+        time.sleep(wait_seconds)
+
+    assert False, f"Chatbot status did not become AVAILABLE after {max_retries} attempts"
+
+
+
+@then(u'the response should contain the chatbot_id')
+def step_impl(context):
+    """Verify that the response contains the chatbot_id"""
+    response_json = context.response.json()
+    logger.info(f"Response contains chatbot_id: {response_json.get('chatbot_id')}")
+    assert_that(response_json).contains("chatbot_id")
+
+@then(u'the status should be In_progress')
+def step_impl(context):
+    """Verify that the status is 'In_progress' in the response"""
+    response_json = context.response.json()
+    logger.info(f"Response status: {response_json.get('status')}")
+    assert_that(response_json['status']).is_equal_to("In_progress")
+
+############################ negative scenario ################################################
 
 @given(u'User sends PUT request to update chatbot details with chatbot_id "{chatbot_id}", chatbot_name "{chatbot_name}", chatbot_description "{chatbot_description}", and env_id "{env_id}"')
 def step_impl(context, chatbot_id, chatbot_name, chatbot_description, env_id):
@@ -38,22 +123,6 @@ def step_impl(context, chatbot_id, chatbot_name, chatbot_description, env_id):
     # Log the PUT request response
     logger.info(f"PUT Chatbot API Response: {context.response.text}")
     print(f"PUT Chatbot API Response: {context.response.text}")  # Fallback to print in console
-
-
-
-@then(u'the response should contain the chatbot_id')
-def step_impl(context):
-    """Verify that the response contains the chatbot_id"""
-    response_json = context.response.json()
-    logger.info(f"Response contains chatbot_id: {response_json.get('chatbot_id')}")
-    assert_that(response_json).contains("chatbot_id")
-
-@then(u'the status should be In_progress')
-def step_impl(context):
-    """Verify that the status is 'In_progress' in the response"""
-    response_json = context.response.json()
-    logger.info(f"Response status: {response_json.get('status')}")
-    assert_that(response_json['status']).is_equal_to("In_progress")
 
 @then(u'the status code returned should be 400')
 def step_impl(context):

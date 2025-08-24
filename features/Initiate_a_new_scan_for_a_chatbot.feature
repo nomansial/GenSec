@@ -9,8 +9,8 @@ Feature: Initiate Scan using Genr3d API
     And the response status should be "SCAN_REQUESTED"
 
     Examples:
-      | target_chatbot                          | target_env                             |
-      | 89ebd370-38bb-43e5-9956-5c8cda370b9c     | aae0a1b6-fafe-40af-ab20-87934343521f   |
+      | target_chatbot                            | target_env                             |
+      | a4bdb755-64bb-4fa8-a35e-209810c70bda      | a4bdb755-64bb-4fa8-a35e-209810c70bda   |
 
   @Test
   Scenario Outline: Verify scan is initiated successfully with valid chatbot and environment IDs
@@ -44,5 +44,3 @@ Feature: Initiate Scan using Genr3d API
     Then the status code returned should be 400 for bad request error
     And the response should contain an error message "Bad Request"
     And the message should contain "Invalid input:"
-
-

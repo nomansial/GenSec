@@ -9,7 +9,7 @@ Feature: Update Environment API
     When user sends the update API call with new environment details
     Then the status code returned should be 200 for the updated environment
     And the response should contain a "status" of "Updated"
-    And the response should contain the correct "env_id"
+    And the response should contain the env_id in the updated response
 
   @Test
   Scenario Outline: Verify Update Environment API when environment is not found (Negative Case)

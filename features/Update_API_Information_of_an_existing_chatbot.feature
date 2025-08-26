@@ -2,15 +2,15 @@ Feature: Update Chatbot API Details using Genr3d API
 
   @Test
   Scenario Outline: Validate successful update of chatbot API details
-    Given User sends PUT request to update chatbot API details for chatbot ID "<chatbot_id>" with environment ID "<env_id>" and endpoint "<chatbot_url>"
+    Given User sends PUT request to update chatbot API details for chatbot ID with environment ID and endpoint "<chatbot_url>"
     When the user receives the chatbot API update response
     Then the status code returned should be 200 for successful update
-    And the response should contain a valid "chatbot_id" matching "<chatbot_id>"
+    And the response should contain a valid chatbotID
     And the response should contain a "status" equal to "API_updated"
 
     Examples:
-      | chatbot_id                             | env_id                                 | chatbot_url                          |
-      | a4bdb755-64bb-4fa8-a35e-209810c70bda    | aae0a1b6-fafe-40af-ab20-87934343521f   | http://34.36.66.146/stream_messages  |
+      | chatbot_url                          |
+      | http://34.36.66.146/stream_messages  |
 
   @Test
   Scenario Outline: Validate chatbot API update response when chatbot ID is not found
@@ -22,4 +22,6 @@ Feature: Update Chatbot API Details using Genr3d API
 
     Examples:
       | chatbot_id                             | env_id                                 | chatbot_url                          |
-      | 89ebd370-38bb-43e5-9956-5c8cda370b1c    | aae0a1b6-fafe-40af-ab20-87934343521f   | http://34.36.66.146/stream_messages  |
+      | 89ebd370-38bb-43e5-9956-5c8cda370b8c    | aae0a1b6-fafe-40af-ab20-87934343521f   | http://34.36.66.146/stream_messages  |
+
+

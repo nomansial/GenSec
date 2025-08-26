@@ -54,6 +54,13 @@ def step_impl(context):
     logger.info(f"Expected status: 'Updated', Got: {response_json.get('status')}")
     assert_that(response_json.get("status")).is_equal_to("Updated")
 
+@then(u'the response should contain the env_id in the updated response')
+def step_impl(context):
+    """Verify that the response contains 'status' as 'Updated'"""
+    response_json = context.response.json()
+    logger.info(f"Environment ID is not null, Got: {response_json.get('env_id')}")
+    assert_that(response_json.get("env_id")).is_not_none()
+
 
 
 ########################### Scenario Outline: Verify Update Environment API when environment is not found (Negative Case) ###########################

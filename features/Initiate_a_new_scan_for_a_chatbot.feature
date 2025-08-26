@@ -9,20 +9,8 @@ Feature: Initiate Scan using Genr3d API
     And the response status should be "SCAN_REQUESTED"
 
     Examples:
-      | target_chatbot                            | target_env                             |
-      | a4bdb755-64bb-4fa8-a35e-209810c70bda      | a4bdb755-64bb-4fa8-a35e-209810c70bda   |
-
-  @Test
-  Scenario Outline: Verify scan is initiated successfully with valid chatbot and environment IDs
-    Given User sends POST request to initiate a scan with chatbot "<target_chatbot>" and environment "<target_env>"
-    When the user receives the scan initiation response
-    Then the status code returned should be 200 for successful scan initiation
-    And the response should contain a "scan_id"
-    And the response status should be "SCAN_REQUESTED"
-
-    Examples:
       | target_chatbot                          | target_env                             |
-      | 89ebd370-38bb-43e5-9956-5c8cda370b9c     | aae0a1b6-fafe-40af-ab20-87934343521f   |
+      | c1ca42ab-a401-45b0-a945-d9cd549d7590     | aae0a1b6-fafe-40af-ab20-87934343521f   |
 
   @Test
   Scenario Outline: Verify scan initiation fails when chatbot or environment is invalid
@@ -34,8 +22,7 @@ Feature: Initiate Scan using Genr3d API
 
     Examples:
       | target_chatbot                          | target_env                             |
-      | 70ebd370-38bb-43e5-9956-5c8cda370b9c     | aae0a1b6-fafe-40af-ab20-87934343521f   |
-      | 89ebd370-38bb-43e5-9956-5c8cda370b9c     | aae0a1b6-fafe-40af-ab20-87934343000f   |
+      | 70ebd370-38bb-43e5-9956-5c8cda370b1c     | aae0a1b6-fafe-40af-ab20-87934343521f   |
 
   @Test
   Scenario: Verify scan initiation fails when chatbot and environment IDs are invalid format

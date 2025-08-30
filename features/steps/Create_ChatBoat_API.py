@@ -154,4 +154,43 @@ def step_impl(context):
     logger.info(f"Expected Status Code: 400, Got: {context.response.status_code}")
     assert_that(context.response.status_code).is_equal_to(400)
 
+@given(u'User sends POST request with "{field}" containing SQL injection "\' OR 1=1 --"')
+def step_impl(context, field):
+    """Send POST request with SQL injection attempt in the specified field"""
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/chatbots"
+
+    # Fetch the API key from the configuration
+    api_key = config['API']['APIKey']  # API key fetched from the config file
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the request body with SQL injection payload in the specified field
+    payload = {
+        "env_id": "' OR 1=1 --" if field == "env_id" else "aae0a1b6-fafe-40af-ab20-87934343521f",
+        "chatbot_name": "' OR 1=1 --" if field == "chatbot_name" else "Valid Chatbot Name",
+        "api_endpoint": "' OR 1=1 --" if field == "api_endpoint" else "Valid API Endpoint",
+        "api_secret": "' OR 1=1 --" if field == "api_secret" else "Valid Secret",
+        "chatbot_url": "' OR 1=1 --" if field == "chatbot_url" else "Valid URL",
+        "chatbot_description": "' OR 1=1 --" if field == "chatbot_description" else "Valid Description"
+    }
+
+    # Send the POST request with the SQL injection payload
+    context.response = requests.post(context.url, json=payload, headers=context.headers)
+
+    # Log the Create Chatbot API response
+    logger.info(f"Create Chatbot API Response (SQL Injection): {context.response.text}")
+    print(f"Create Chatbot API Response (SQL Injection): {context.response.text}")  # Fallback to print in console
+
+
+@then(u'the response should contain the message "Invalid input:"')
+def step_impl(context):
+    """Verify that the response contains 'Invalid input:' message"""
+    response_json = context.response.json()
+    logger.info(f"Expected error message: 'Invalid input:', Got: {response_json.get('message')}")
+    assert_that(response_json.get("message")).contains("Invalid input:")
+
 

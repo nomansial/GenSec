@@ -1,6 +1,6 @@
 Feature: Create Chatbot API
 
-  @Test @positive
+  @Test
   Scenario: Verify Create Chatbot API creates a chatbot successfully
     Given User sends POST request to create a chatbot with valid details
     When the user receives the response
@@ -19,7 +19,7 @@ Feature: Create Chatbot API
       | chatbot_name |
       | None         |
 
-  @Test
+  @Test @Negative
   Scenario Outline: Verify Create Chatbot API when required fields are missing (Negative Case)
     Given User sends POST request to create a chatbot with missing required fields "<field>"
     When the user receives the response
@@ -35,3 +35,19 @@ Feature: Create Chatbot API
       | api_secret         |
       | chatbot_url        |
       | chatbot_description |
+
+
+  @Test @Security
+  Scenario Outline: SQL injection attempt in input fields
+    Given User sends POST request with "<field>" containing SQL injection "' OR 1=1 --"
+    When the user receives the response
+    Then the response should contain the message "Invalid input:"
+
+  Examples:
+    | field              |
+    | env_id             |
+    | chatbot_name       |
+    | api_endpoint       |
+    | api_secret         |
+    | chatbot_url        |
+    | chatbot_description |

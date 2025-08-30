@@ -7,7 +7,7 @@ Feature: Retrieve Environments
     Then the status code returned should be 200
     And each environment should have a non-null "env_id" and "name"
 
-  @Test
+  @Test @Negative
   Scenario: APIKey2 should not have access to environments visible to APIKey
     Given the user sends a GET request to retrieve the environments using APIKey
     Then the user stores the list of environments returned

@@ -62,3 +62,59 @@ def step_impl(context):
         assert_that(envs_api_key2).is_not_equal_to(context.envs_api_key)
     except ValueError:
         assert False, "Failed to parse response JSON"
+
+@given(u'the user sends a GET request to retrieve the environments using an invalid API key')
+def step_impl(context):
+    config = getConfig()
+    url = f"{config['API']['BaseURL']}/environments"
+    invalid_api_key = config['API'].get('Invalid_Key', '')  # Replace with an actual invalid key if needed
+    headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': invalid_api_key
+    }
+    context.response_invalid_api_key = requests.get(url, headers=headers)
+
+@then(u'status code be 400')
+def step_impl(context):
+    response = context.response_invalid_api_key
+    assert_that(response).is_not_none()
+    assert_that(response.status_code).is_equal_to(400)
+
+@then(u'the response should contain code 400')
+def step_impl(context):
+    response_json = context.response_invalid_api_key.json()
+    assert_that(response_json.get('code')).is_equal_to(400)
+
+@then(u'the response should contain the message "INVALID_ARGUMENT:"')
+def step_impl(context):
+    response_json = context.response_invalid_api_key.json()
+    assert_that(response_json.get('message')).contains("INVALID_ARGUMENT:")
+
+
+@given(u'the user sends a GET request with a malicious payload')
+def step_impl(context):
+    config = getConfig()
+    url = f"{config['API']['BaseURL']}/environments"
+    malicious_payload = "' OR 1=1 --"
+    headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': config['API'].get('APIKey', '')
+    }
+    context.response_sql_injection = requests.get(url + f"?query={malicious_payload}", headers=headers)
+
+@given(u'the user sends a GET request with a XSS attempt')
+def step_impl(context):
+    config = getConfig()
+    url = f"{config['API']['BaseURL']}/environments"
+    malicious_payload = "<script>alert('XSS')</script>"
+    headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': config['API'].get('APIKey', '')
+    }
+    context.response_sql_injection = requests.get(url + f"?name={malicious_payload}", headers=headers)
+
+
+@then(u'the response should contain the message Invalid input')
+def step_impl(context):
+    response_json = context.response_sql_injection.json()
+    assert_that(response_json.get('message')).contains("Invalid input:")

@@ -185,6 +185,38 @@ def step_impl(context, field):
     logger.info(f"Create Chatbot API Response (SQL Injection): {context.response.text}")
     print(f"Create Chatbot API Response (SQL Injection): {context.response.text}")  # Fallback to print in console
 
+@given(u'User sends POST request with "{field}" containing "<script>alert(\'XSS\')</script>"')
+def step_impl(context, field):
+    """Send POST request with XSS attempt in the specified field"""
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/chatbots"
+
+    # Fetch the API key from the configuration
+    api_key = config['API']['APIKey']  # API key fetched from the config file
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the request body with XSS payload in the specified field
+    payload = {
+        "env_id": "<script>alert('XSS')</script>" if field == "env_id" else "aae0a1b6-fafe-40af-ab20-87934343521f",
+        "chatbot_name": "<script>alert('XSS')</script>" if field == "chatbot_name" else "Valid Chatbot Name",
+        "api_endpoint": "<script>alert('XSS')</script>" if field == "api_endpoint" else "Valid API Endpoint",
+        "api_secret": "<script>alert('XSS')</script>" if field == "api_secret" else "Valid Secret",
+        "chatbot_url": "<script>alert('XSS')</script>" if field == "chatbot_url" else "Valid URL",
+        "chatbot_description": "<script>alert('XSS')</script>" if field == "chatbot_description" else "Valid Description"
+    }
+
+    # Send the POST request with the XSS payload
+    context.response = requests.post(context.url, json=payload, headers=context.headers)
+
+    # Log the Create Chatbot API response
+    logger.info(f"Create Chatbot API Response (XSS Injection): {context.response.text}")
+    print(f"Create Chatbot API Response (XSS Injection): {context.response.text}")  # Fallback to print in console
+
+
 
 @then(u'the response should contain the message "Invalid input:"')
 def step_impl(context):

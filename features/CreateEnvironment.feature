@@ -1,6 +1,6 @@
 Feature: Create Environment API
 
-  @Test
+  @Test @Negative @Security
   Scenario Outline: Verify Create Environment API
     Given the user provides the environment details "<env_name>" and "<env_description>"
     When the user sends a request to create the environment
@@ -17,3 +17,5 @@ Feature: Create Environment API
       | Invalid@Name  | Invalid@Desc                                        | 400         | Bad Request   |
       | None          | Valid description                                   | 400         | Bad Request   |
       | Valid Name    | None                                                | 400         | Bad Request   |
+      | ' OR 1=1 --   | ' OR 1=1 --                                         | 400         | Bad Request   |
+      | <script>alert('XSS')</script>| <script>alert('XSS')</script>        | 400         | Bad Request   |

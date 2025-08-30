@@ -51,3 +51,18 @@ Feature: Create Chatbot API
     | api_secret         |
     | chatbot_url        |
     | chatbot_description |
+
+  @Test @Security
+  Scenario Outline: Cross-Site Scripting (XSS) attempt in input fields
+    Given User sends POST request with "<field>" containing "<script>alert('XSS')</script>"
+    When the user receives the response
+    Then the response should contain the message "Invalid input:"
+
+  Examples:
+    | field              |
+    | env_id             |
+    | chatbot_name       |
+    | api_endpoint       |
+    | api_secret         |
+    | chatbot_url        |
+    | chatbot_description |

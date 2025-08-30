@@ -12,7 +12,7 @@ Feature: Fetch Environment Details API
     And the "name" should not be null
     And the "env_id" should match the env_id fetched from Create Environment API
 
-  @Test
+  @Test @Negative
   Scenario Outline: Verify Fetch Environment Details API when environment is not found (Negative Case)
     Given User sends GET request to fetch environment details with an invalid or missing env_id "<env_id>"
     When user receives the response

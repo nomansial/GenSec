@@ -12,7 +12,7 @@ Feature: Fetch Environment Details API
     And the "name" should not be null
     And the "env_id" should match the env_id fetched from Create Environment API
 
-  @Test @Negative
+  @Test @Negative @Security
   Scenario Outline: Verify Fetch Environment Details API when environment is not found (Negative Case)
     Given User sends GET request to fetch environment details with an invalid or missing env_id "<env_id>"
     When user receives the response
@@ -23,3 +23,14 @@ Feature: Fetch Environment Details API
     | env_id                            |
     | ab809075-108f-4f67-2fb5-asdf      |
     | None                              |
+    | ' OR 1=1 --                       |
+
+  @Test @Security
+  Scenario Outline: Verify API should return error message when XSS injection is passed in env_id
+    Given User sends GET request to fetch environment details with an invalid env_id "<env_id>"
+    When user receives the response
+    Then API should contain the message Current request is not defined by this API
+
+  Examples:
+    | env_id                            |
+    | <script>alert('XSS')</script>     |

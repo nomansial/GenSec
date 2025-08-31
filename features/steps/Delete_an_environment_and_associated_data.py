@@ -73,6 +73,20 @@ def step_impl(context):
     assert_that(response_json.get("status")).is_equal_to("Deleted")
 
 
+# Step to set an invalid env_id
+@given(u'User sets an invalid env_id')
+def step_impl(context):
+    """Set an invalid environment ID for deletion"""
+    context.env_id = "bbd21bd8-bf14-4d34-b6f0-44400d057187"
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/environments/{context.env_id}"
+
+    api_key = config['API'].get('APIKey', '')
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
 # Step to verify the correct env_id is returned
 @then(u'contain the correct "env_id"')
 def step_impl(context):
@@ -87,3 +101,50 @@ def step_impl(context):
     """Verify that the response contains a non-null 'name'"""
     response_json = context.response2.json()
     assert_that(response_json.get("name")).is_not_none().is_not_empty()
+
+
+# Step to send DELETE request with invalid env_id
+@when(u'delete API call is triggered')
+def step_impl(context):
+    """Send DELETE request with invalid env_id"""
+    context.response = requests.delete(context.url, headers=context.headers)
+
+# Step to verify error message in response
+@then(u'contain an error message "Environment not found"')
+def step_impl(context):
+    """Verify error message for invalid env_id"""
+    response_json = context.response.json()
+    assert_that(response_json.get("error")).is_equal_to("Not Found")
+
+
+# Step to set a malicious env_id for injection attack
+@given(u'User sets a malicious env_id for injection attack')
+def step_impl(context):
+    """Set a malicious env_id to simulate injection attack"""
+    context.env_id = "123'; DROP TABLE environments;--"
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/environments/{context.env_id}"
+
+    api_key = config['API'].get('APIKey', '')
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+
+# Step to send DELETE request with malicious env_id
+@when(u'user sends delete API call for security scenrio')
+def step_impl(context):
+    """Send DELETE request with malicious env_id"""
+    context.response = requests.delete(context.url, headers=context.headers)
+
+
+# Step to verify error contains "Bad Request"
+@then(u'error contains "Bad Request"')
+def step_impl(context):
+    """Verify that the error message contains 'Bad Request'"""
+    response_json = context.response.json()
+    assert_that(response_json.get("error")).is_equal_to("Bad Request")
+    assert_that(response_json.get("message")).contains("Invalid input")
+
+

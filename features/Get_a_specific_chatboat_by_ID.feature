@@ -11,7 +11,7 @@ Feature: Verify Get Chatbot API
       | chatbot_id                                 |
       | d8d4c7b6-a4a4-4839-94d5-da4bb139043f       |
 
-    @Test
+    @Test @Negative
   Scenario Outline: Verify Get Chatbot API retrieves chatbot details successfully for a given chatbot_id
     Given User sends GET request to fetch chatbot details with chatbot_id "<chatbot_id>"
     When the user receives the response
@@ -23,8 +23,8 @@ Feature: Verify Get Chatbot API
       | chatbot_id                                 |
       | 246b839f-77c3-48e5-b8d2-7e4762d8a09b       |
 
-  @Test
-  Scenario Outline: Verify Get Chatbot API returns error for an invalid chatbot_id
+  @Test @Security
+  Scenario Outline: Verify Get Chatbot API returns error for an invalid chatbot_id when invalid or sql injection is passed
     Given User sends GET request to fetch chatbot details with chatbot_id "<chatbot_id>"
     When the user receives the response
     Then the status code returned should be 400 for a bad request
@@ -34,3 +34,4 @@ Feature: Verify Get Chatbot API
     Examples:
       | chatbot_id             |
       | asdfasdfasdfsadf       |
+      | ' OR 1=1 --            |

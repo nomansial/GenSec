@@ -169,3 +169,40 @@ def step_impl(context):
     """Verify that the error message is 'Not Found'"""
     response_json = context.response.json()
     assert_that(response_json.get("error")).is_equal_to("Bad Request")
+
+
+# Step to send GET request using the invalid env_id
+@given(u'User sends GET request to fetch environment details with an invalid env_id "{env_id}"')
+def step_impl(context, env_id):
+    """Send GET request to fetch environment details using invalid env_id"""
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/environments/{env_id}"
+
+    api_key = config['API'].get('APIKey', '')  # Correct API key from config
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Send the GET request to fetch the environment details
+    context.response = requests.get(context.url, headers=context.headers)
+
+    # Log the request URL and response for debugging
+    logger.info(f"Request URL: {context.url}")
+    logger.info(f"Request Headers: {context.headers}")
+    logger.info(f"Response: {context.response.text}")
+
+
+@then(u'API should contain the message Current request is not defined by this API')
+def step_impl(context):
+    """Verify that the response contains the correct error message"""
+    response_json = context.response.json()
+    logger.info(f"Response: {response_json}")
+
+    # Check if the error message exists and is not None
+    error_message = response_json.get("message")
+    assert_that(error_message).is_not_none()
+
+    # Check if the message matches the expected error message for an invalid env_id
+    assert_that(error_message).contains("The current request is not defined by this API.")

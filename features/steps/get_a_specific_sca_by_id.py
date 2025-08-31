@@ -88,6 +88,34 @@ def step_impl(context, scan_id):
     logger.info(f"Expected message: '{expected_message}', Got: '{actual_message}'")
     assert_that(actual_message).is_equal_to(expected_message)
 
+@given(u'Specific Scan by ID the user sends GET request with finding ID')
+def step_impl(context):
+    """Send GET request with a finding ID containing an XSS injection attempt"""
+    config = getConfig()
+    finding_id = "<script>alert('XSS');</script>"  # XSS injection attempt
+    context.url = f"{config['API']['BaseURL']}/scans/{finding_id}"  # Corrected to 'scans'
+
+    api_key = config['API']['APIKey']
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Send the GET request with the malicious finding ID
+    context.response = requests.get(context.url, headers=context.headers)
+
+    # Log and print the response for debugging purposes
+    logger.info(f"Finding Details Response: {context.response.text}")
+    print(f"Finding Details Response: {context.response.text}")
+
+@then(u'Specific Scan by ID the status code returned should be 404')
+def step_impl(context):
+    assert_that(context.response.status_code).is_equal_to(404)
+
+@then(u'Specific Scan by ID the message should contain "The current request is not defined by this API."')
+def step_impl(context):
+    response_json = context.response.json()
+    assert_that(response_json.get("message")).contains("The current request is not defined by this API.")
 
 
 

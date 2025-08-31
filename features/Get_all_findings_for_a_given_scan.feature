@@ -22,7 +22,7 @@ Feature: Get Findings by Scan ID using Genr3d API
       | scan_id                                |
       | 3412a2c5-127b-476c-b399-af68ee4aefc7    |
 
-  @Test
+  @Test @Negative
   Scenario Outline: Validate findings response when scan ID is not found
     Given User sends GET request to fetch findings for scan ID "<scan_id>"
     When the user receives the findings response
@@ -35,7 +35,7 @@ Feature: Get Findings by Scan ID using Genr3d API
       | scan_id                                |
       | 3412a2c5-127b-476c-b399-af68ee4aef00    |
 
-  @Test
+  @Test @Negative
   Scenario Outline: Validate findings response for invalid scan ID format
     Given User sends GET request to fetch findings for scan ID "<scan_id>"
     When the user receives the findings response
@@ -46,3 +46,5 @@ Feature: Get Findings by Scan ID using Genr3d API
     Examples:
       | scan_id   |
       | invalid   |
+      |' OR 1=1 --|
+      | <script>alert('XSS')</script> |

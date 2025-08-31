@@ -14,7 +14,7 @@ Feature: Verify Get Chatbot API
       | env_id                               |
       | f0b53f20-5ebe-4132-cbea-68725ef2c5c8 |
 
-  @Test
+  @Test @Negative @Security
   Scenario Outline: Verify Get Chatbot API when the env_id is invalid or missing
     Given User sends GET request to fetch chatbots with env_id "<env_id>"
     When the user receives the response
@@ -26,3 +26,5 @@ Feature: Verify Get Chatbot API
       | env_id         |
       | asdf		   |
       | None           |
+      | ' OR 1=1 --    |
+      | <script>alert('XSS')</script> |

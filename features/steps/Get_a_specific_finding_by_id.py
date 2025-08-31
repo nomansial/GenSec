@@ -73,4 +73,29 @@ def step_impl(context, finding_id):
     actual_message = context.response.json().get("message")
     assert_that(actual_message).is_equal_to(expected_message)
 
+@given(u'the user sends GET request with finding ID')
+def step_impl(context):
+    config = getConfig()
+    finding_id = "<script>alert('XSS');</script>"
+    context.url = f"{config['API']['BaseURL']}/findings/{finding_id}"
+    api_key = config['API']['APIKey']
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+    context.response = requests.get(context.url, headers=context.headers)
+    logger.info(f"Finding Details Response: {context.response.text}")
+    print(f"Finding Details Response: {context.response.text}")
+
+
+
+@then(u'the status code returned should be 404')
+def step_impl(context):
+    assert_that(context.response.status_code).is_equal_to(404)
+
+@then(u'the message should contain "The current request is not defined by this API."')
+def step_impl(context):
+    response_json = context.response.json()
+    assert_that(response_json.get("message")).contains("The current request is not defined by this API.")
+
 

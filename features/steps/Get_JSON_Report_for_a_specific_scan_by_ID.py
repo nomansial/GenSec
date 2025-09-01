@@ -91,3 +91,21 @@ def step_impl(context):
                 assert_that(len(value)).is_greater_than(0)
             else:
                 assert_that(str(value)).is_not_empty()
+
+@then(u'the response should contain the error "Bad Request"')
+def step_impl(context):
+    """Check if the response contains the specified error message"""
+    response_json = context.response.json()
+    assert_that(response_json.get("error")).is_equal_to('Bad Request')
+
+@then(u'the response should contain the error message "Invalid input:"')
+def step_impl(context):
+    """Check if the response contains the specified error message"""
+    response_json = context.response.json()
+    assert_that(response_json.get("message")).contains('Invalid input:')
+
+@then(u'the response should contain the message "The current request is not defined by this API."')
+def step_impl(context):
+    """Check if the response contains the specific error message for XSS attack"""
+    response_json = context.response.json()
+    assert_that(response_json.get("message")).is_equal_to("The current request is not defined by this API.")

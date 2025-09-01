@@ -12,7 +12,7 @@ Feature: Initiate Scan using Genr3d API
       | target_chatbot                          | target_env                             |
       | c1ca42ab-a401-45b0-a945-d9cd549d7590     | aae0a1b6-fafe-40af-ab20-87934343521f   |
 
-  @Test
+  @Test @Negative
   Scenario Outline: Verify scan initiation fails when chatbot or environment is invalid
     Given User sends POST request to initiate a scan with chatbot "<target_chatbot>" and environment "<target_env>"
     When the user receives the scan initiation response
@@ -24,10 +24,11 @@ Feature: Initiate Scan using Genr3d API
       | target_chatbot                          | target_env                             |
       | 70ebd370-38bb-43e5-9956-5c8cda370b1c     | aae0a1b6-fafe-40af-ab20-87934343521f   |
 
-  @Test
+  @Test @Negative @Security
   Scenario: Verify scan initiation fails when chatbot and environment IDs are invalid format
     Given User sends POST request to initiate a scan with chatbot "invalid" and environment "invalid"
     When the user receives the scan initiation response
     Then the status code returned should be 400 for bad request error
     And the response should contain an error message "Bad Request"
     And the message should contain "Invalid input:"
+

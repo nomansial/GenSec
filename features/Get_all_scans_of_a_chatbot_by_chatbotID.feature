@@ -14,7 +14,7 @@ Feature: Get Scans by Chatbot ID using Genr3d API
       | chatbot_id                              |
       | 89ebd370-38bb-43e5-9956-5c8cda370b9c     |
 
-  @Test
+  @Test @Negative
   Scenario Outline: Verify scans API returns empty list for invalid chatbot ID
     Given User sends GET request to fetch scans for chatbot ID "<chatbot_id>"
     When the user receives the scans response
@@ -25,7 +25,7 @@ Feature: Get Scans by Chatbot ID using Genr3d API
       | chatbot_id                              |
       | 89ebd370-38bb-43e5-9956-5c8cda370b90     |
 
-  @Test
+  @Test @Security
   Scenario Outline: Verify scans API returns 400 for invalid chatbot ID format
     Given User sends GET request to fetch scans for chatbot ID "<chatbot_id>"
     When the user receives the scans response
@@ -36,5 +36,7 @@ Feature: Get Scans by Chatbot ID using Genr3d API
     Examples:
       | chatbot_id   |
       | invalid      |
+      | ' OR 1=1 --  |
+      | <script>alert('XSS')</script> |
 
 

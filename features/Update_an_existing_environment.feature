@@ -1,8 +1,6 @@
 Feature: Update Environment API
 
 
-  Feature: Update Environment API
-
   @Test
   Scenario: Verify Update Environment API updates the environment successfully
     Given User fetches env_id from Create Environment API
@@ -11,7 +9,7 @@ Feature: Update Environment API
     And the response should contain a "status" of "Updated"
     And the response should contain the env_id in the updated response
 
-  @Test
+  @Test @Negative
   Scenario Outline: Verify Update Environment API when environment is not found (Negative Case)
     Given User sends PUT request to update environment details with an invalid env_id "<env_id>"
     When user receives the response
@@ -23,4 +21,16 @@ Feature: Update Environment API
       | env_id                               |
       | ab809075-108f-4f67-2fb5-dc909ed60692 |
       | None                                 |
+
+
+  @Test @Security
+  Scenario Outline: SQL injection attempt in the Update Environment API request
+    Given User sends POST request to update environment details with "<env_id>" and "<env_name>" and "<env_description>"
+    When user receives the response
+    Then the response should contain the error message "Bad Request" for SQL injection input
+    And the response message should contain "Invalid input:"
+
+    Examples:
+      | env_id              | env_name            | env_description      |
+      | ' OR 1=1 --         | ' OR 1=1 --         | ' OR 1=1 --          |
 

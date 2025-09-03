@@ -12,7 +12,7 @@ Feature: Update Chatbot API Details using Genr3d API
       | chatbot_url                          |
       | http://34.36.66.146/stream_messages  |
 
-  @Test
+  @Test @Negative
   Scenario Outline: Validate chatbot API update response when chatbot ID is not found
     Given User sends PUT request to update chatbot API details for chatbot ID "<chatbot_id>" with environment ID "<env_id>" and endpoint "<chatbot_url>"
     When the user receives the chatbot API update response
@@ -24,4 +24,15 @@ Feature: Update Chatbot API Details using Genr3d API
       | chatbot_id                             | env_id                                 | chatbot_url                          |
       | 89ebd370-38bb-43e5-9956-5c8cda370b8c    | aae0a1b6-fafe-40af-ab20-87934343521f   | http://34.36.66.146/stream_messages  |
 
+
+  @Test @Security
+  Scenario Outline: SQL injection attempt in the Update Chatbot API request
+    Given User send request to update API "<chatbot_id>" with environment ID "<env_id>" and endpoint "<chatbot_url>"
+    When the user receives the API response
+    Then message should contain "Invalid input:"
+    And the message should contain "chatbot_id" with validation errors related to the input
+
+    Examples:
+      | chatbot_id           | env_id               | chatbot_url               |
+      | ' OR 1=1 --          | ' OR 1=1 --          | ' OR 1=1 --               |
 

@@ -148,3 +148,46 @@ def step_impl(context, env_id):
         else:
             # If not, check for "not found"
             assert_that(response_json.get("message")).contains("not found")
+
+########################### Scenario Outline: SQL injection attempt in the Update Environment API request ###########################
+
+@given(u'User sends POST request to update environment details with "{env_id}" and "{env_name}" and "{env_description}"')
+def step_impl(context, env_id, env_name, env_description):
+    """Send POST request to update environment details with SQL injection payload"""
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/environments"
+
+    api_key = "AIzaSyCNI5CQeoAAfvQB07m2KGqDXLlgQKMg-aM"  # API key passed in the request header
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the request body with malicious payload for SQL injection
+    payload = {
+        "env_id": env_id,
+        "env_name": env_name,
+        "env_description": env_description
+    }
+
+    # Send the POST request to update the environment
+    context.response = requests.post(context.url, json=payload, headers=context.headers)
+
+    # Log the response for visibility
+    logger.info(f"SQL Injection API Response: {context.response.text}")
+    print(f"SQL Injection API Response: {context.response.text}")  # Fallback to print in console
+
+@then(u'the response should contain the error message "Bad Request" for SQL injection input')
+def step_impl(context):
+    """Verify that the response contains a "Bad Request" error message for SQL injection input"""
+    assert_that(context.response.status_code).is_equal_to(400)
+    logger.info(f"Expected error message: 'Bad Request', Got: {context.response.status_code}")
+    assert_that(context.response.json().get("error")).is_equal_to("Bad Request")
+
+@then(u'the response message should contain "Invalid input:"')
+def step_impl(context):
+    """Verify that the response message contains 'Invalid input:' indicating SQL injection was detected"""
+    response_json = context.response.json()
+    logger.info(f"Expected message to contain 'Invalid input:', Got: {response_json.get('message')}")
+    assert_that(response_json.get("message")).contains("Invalid input:")

@@ -12,7 +12,7 @@ Feature: Update Chatbot API
       | chatbot_name     | chatbot_description              | env_id                               |
      | New updated Name | Updated through Automation suite | f0b53f20-5ebe-4132-cbea-68725ef2c5c8 |
 
-  @Test
+  @Test @Negative
   Scenario Outline: Negative Verify PUT request successfully updates chatbot details
     Given User sends PUT request to update chatbot details with chatbot_id "<chatbot_id>", chatbot_name "<chatbot_name>", chatbot_description "<chatbot_description>", and env_id "<env_id>"
     When the user receives the response
@@ -23,3 +23,14 @@ Feature: Update Chatbot API
     Examples:
       | chatbot_id                           | chatbot_name     | chatbot_description              | env_id                               |
       | a4bdb755-64bb-4fa8-a35e-209810c70bda | New updated Name | Updated through Automation suite | f0b53f20-5ebe-4132-cbea-68725ef2c5c8 |
+
+  @Test @Security
+  Scenario Outline: SQL Injection Attempt in PUT request for chatbot details
+    Given User sends request with chatbot_id "<chatbot_id>", chatbot_name "<chatbot_name>", chatbot_description "<chatbot_description>", and env_id "<env_id>"
+    When the user receives the response
+    Then  the response should contain error variable with value "Bad Request"
+    And the response should contain invalid input message
+
+    Examples:
+      | chatbot_id   | chatbot_name    | chatbot_description | env_id       |
+      | ' OR 1=1 --  | ' OR 1=1 --      | ' OR 1=1 --          | ' OR 1=1 -- |

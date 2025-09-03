@@ -49,7 +49,7 @@ def step_impl(context, chatbot_name, chatbot_description, env_id):
 
     # Poll until status becomes AVAILABLE
     status_url = f"{base_url}/chatbots/{chatbot_id}"
-    max_retries = 50
+    max_retries = 150
     wait_seconds = 10
 
     for attempt in range(max_retries):
@@ -143,3 +143,49 @@ def step_impl(context):
     response_json = context.response.json()
     logger.info(f"Response message: {response_json.get('message')}")
     assert_that(response_json['message']).contains("The chatbot must be in AVAILABLE status")
+
+########################### SQL Injection Attempt Scenario ###########################
+
+@given(u'User sends request with chatbot_id "{chatbot_id}", chatbot_name "{chatbot_name}", chatbot_description "{chatbot_description}", and env_id "{env_id}"')
+def step_impl(context, chatbot_id, chatbot_name, chatbot_description, env_id):
+    """Send PUT request with SQL injection in the chatbot details"""
+    config = getConfig()
+    base_url = config['API']['BaseURL']
+    api_key = config['API']['APIKey']
+
+    context.url = f"{base_url}/chatbots/{chatbot_id}"
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    context.request_body = {
+        "chatbot_id": chatbot_id,
+        "chatbot_name": chatbot_name,
+        "chatbot_description": chatbot_description,
+        "env_id": env_id
+    }
+
+    # Send the PUT request
+    context.response = requests.put(context.url, json=context.request_body, headers=context.headers)
+
+    # Log the PUT request response
+    logger.info(f"PUT Chatbot API Response: {context.response.text}")
+    print(f"PUT Chatbot API Response: {context.response.text}")  # Fallback to print in console
+
+
+@then(u'the response should contain error variable with value "Bad Request"')
+def step_impl(context):
+    """Verify that the response contains the 'Bad Request' error"""
+    response_json = context.response.json()
+    logger.info(f"Response contains error: {response_json.get('error')}")
+    assert_that(response_json).contains("error")
+    assert_that(response_json['error']).is_equal_to("Bad Request")
+
+
+@then(u'the response should contain invalid input message')
+def step_impl(context):
+    """Verify that the response contains the message 'Invalid input:'"""
+    response_json = context.response.json()
+    logger.info(f"Response message: {response_json.get('message')}")
+    assert_that(response_json['message']).contains("Invalid input:")

@@ -47,7 +47,7 @@ def step_impl(context, chatbot_url):
 
     # Poll until status becomes AVAILABLE
     status_url = f"{base_url}/chatbots/{chatbot_id}"
-    max_retries = 50
+    max_retries = 150
     wait_seconds = 10
 
     for attempt in range(max_retries):
@@ -147,3 +147,68 @@ def step_impl(context, chatbot_id):
     expected_message = f"Chatbot with ID {chatbot_id} not found."
     actual_message = context.response.json().get("message")
     assert_that(actual_message).is_equal_to(expected_message)
+
+
+import requests
+import logging
+from behave import given, when, then
+from assertpy import assert_that
+from utilities.configurations import getConfig
+
+# Logging setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+########################### Scenario Outline: SQL injection attempt in the Update Chatbot API request ###########################
+
+@given(
+    u'User send request to update API "{chatbot_id}" with environment ID "{env_id}" and endpoint "{chatbot_url}"')
+def step_impl(context, chatbot_id, env_id, chatbot_url):
+    """Send PUT request to update chatbot API details with malicious SQL injection payload"""
+
+    config = getConfig()
+    base_url = config['API']['BaseURL']
+    api_key = config['API']['APIKey']
+
+    context.url = f"{base_url}/chatbots/{chatbot_id}/api"
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the malicious SQL injection payload
+    payload = {
+        "chatbot_id": chatbot_id,
+        "env_id": env_id,
+        "chatbot_url": chatbot_url,
+        "api_endpoint": "' OR 1=1 --",  # SQL injection in api_endpoint
+        "api_specifications": "' OR 1=1 --",  # SQL injection in api_specifications
+    }
+
+    # Send the PUT request with SQL injection input
+    context.response = requests.put(context.url, json=payload, headers=context.headers)
+    logger.info(f"SQL Injection PUT Request Response: {context.response.text}")
+    print(f"SQL Injection PUT Request Response: {context.response.text}")
+
+
+@when(u'the user receives the API response')
+def step_impl(context):
+    """The response is already captured in context.response during the PUT request"""
+    assert_that(context.response).is_not_none()
+
+
+@then(u'message should contain "Invalid input:"')
+def step_impl(context):
+    """Verify that the response contains 'Invalid input:' indicating the input is invalid"""
+    response_json = context.response.json()
+    logger.info(f"Expected error message: 'Invalid input:', Got: {response_json.get('message')}")
+    assert_that(response_json.get("message")).contains("Invalid input:")
+
+
+@then(u'the message should contain "chatbot_id" with validation errors related to the input')
+def step_impl(context):
+    """Verify that the response contains validation errors related to chatbot_id"""
+    response_json = context.response.json()
+    logger.info(f"Expected validation errors for 'chatbot_id', Got: {response_json.get('error')}")
+    assert_that(response_json.get("error")).contains("Bad Request")

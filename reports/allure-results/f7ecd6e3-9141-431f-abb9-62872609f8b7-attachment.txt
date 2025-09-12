@@ -1,0 +1,1 @@
+{"error":"Bad Request","message":"Invalid input: {\"new_password\": [\"min length is 8\", \"value does not match regex '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d)(?=.*[^\\\\w\\\\s])\\\\S{8,256}$'\"], \"phone_number\": [\"min length is 6\", \"value does not match regex '^\\\\+(?:[0-9] ?.?-?){6,25}[0-9]$'\"]}"}

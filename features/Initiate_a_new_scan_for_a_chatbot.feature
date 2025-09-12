@@ -10,7 +10,7 @@ Feature: Initiate Scan using Genr3d API
 
     Examples:
       | target_chatbot                          | target_env                             |
-      | c1ca42ab-a401-45b0-a945-d9cd549d7590     | aae0a1b6-fafe-40af-ab20-87934343521f   |
+      | 20b49f8a-6591-4081-af50-d542e9a0914e     | bdacf6f7-9499-478a-9b05-f1966f25f389   |
 
   @Test @Negative
   Scenario Outline: Verify scan initiation fails when chatbot or environment is invalid

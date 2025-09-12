@@ -29,6 +29,11 @@ def step_impl(context):
 def step_impl(context):
     pass
 
+@when(u'Firebase_the user receives the response')
+def step_impl(context):
+    pass
+
+
 @then(u'the status code returned should be 200')
 def step_impl(context):
     response = getattr(context, 'response_api_key2', getattr(context, 'response_api_key', None))

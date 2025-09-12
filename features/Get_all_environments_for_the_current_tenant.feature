@@ -1,4 +1,4 @@
-Feature: Retrieve Environments
+Feature: Get Environments
 
   @Test
   Scenario: Valid API key returns environments

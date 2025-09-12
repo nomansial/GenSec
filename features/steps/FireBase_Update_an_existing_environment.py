@@ -1,0 +1,193 @@
+import requests
+import logging
+from behave import given, when, then
+from assertpy import assert_that
+from utilities.configurations import getConfig
+from FireBase_Delete_an_environment_and_associated_data import step_impl
+
+
+# Set up logging to print out the response in the console
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+########################### Scenario: Verify Update Environment API updates the environment successfully ###########################
+
+@when(u'FireBase_user sends the update API call with new environment details')
+def step_impl(context):
+    """Send PUT request to update environment details"""
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/environments/{context.env_id}"
+
+    api_key = "AIzaSyCNI5CQeoAAfvQB07m2KGqDXLlgQKMg-aM"  # API key passed in the request header
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the request body to update the environment
+    payload = {
+        "env_id": context.env_id,
+        "env_name": "new updated name",
+        "env_description": "new updated description"
+    }
+
+    # Send the PUT request to update the environment
+    context.response = requests.put(context.url, json=payload, headers=context.headers)
+
+    # Log the Update Environment API response
+    logger.info(f"Update Environment API Response: {context.response.text}")
+    print(f"Update Environment API Response: {context.response.text}")  # Fallback to print in console
+
+
+@then(u'FireBase_the status code returned should be 200 for the updated environment')
+def step_impl(context):
+    """Verify that the status code for the update request is 200"""
+    logger.info(f"Expected Status Code: 200, Got: {context.response.status_code}")
+    assert_that(context.response.status_code).is_equal_to(200)
+
+
+@then(u'FireBase_the response should contain a "status" of "Updated"')
+def step_impl(context):
+    """Verify that the response contains 'status' as 'Updated'"""
+    response_json = context.response.json()
+    logger.info(f"Expected status: 'Updated', Got: {response_json.get('status')}")
+    assert_that(response_json.get("status")).is_equal_to("Updated")
+
+@then(u'FireBase_the response should contain the env_id in the updated response')
+def step_impl(context):
+    """Verify that the response contains 'status' as 'Updated'"""
+    response_json = context.response.json()
+    logger.info(f"Environment ID is not null, Got: {response_json.get('env_id')}")
+    assert_that(response_json.get("env_id")).is_not_none()
+
+
+
+########################### Scenario Outline: Verify Update Environment API when environment is not found (Negative Case) ###########################
+
+@given(u'FireBase_User sends PUT request to update environment details with an invalid env_id "{env_id}"')
+def step_impl(context, env_id):
+    """Send PUT request to update environment details with an invalid or non-existing env_id"""
+    config = getConfig()
+    context.url = f"https://genr3d-api.generativesecurity.ai/environments/{env_id}"
+
+    api_key = "AIzaSyCNI5CQeoAAfvQB07m2KGqDXLlgQKMg-aM"  # API key passed in the request header
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the request body to update the environment
+    payload = {
+        "env_id": env_id,
+        "env_name": "update name",
+        "env_description": "update description"
+    }
+
+    # Send the PUT request to update the environment
+    context.response = requests.put(context.url, json=payload, headers=context.headers)
+
+    # Log the Update Environment API response
+    logger.info(f"Update Environment API Response: {context.response.text}")
+    print(f"Update Environment API Response: {context.response.text}")  # Fallback to print in console
+
+
+@then(u'FireBase_the status code should be 404 for not found error')
+def step_impl(context):
+    """Verify that the status code for the error is 404 or 400 based on env_id"""
+    response_json = context.response.json()
+
+    # Check if env_id is invalid (None or malformed)
+    if context.response.status_code == 400:
+        # If invalid env_id, expect a 400 status code
+        logger.info(f"Expected Status Code: 400, Got: {context.response.status_code}")
+        assert_that(context.response.status_code).is_equal_to(400)
+    else:
+        # If valid env_id but not found, expect a 404 status code
+        logger.info(f"Expected Status Code: 404, Got: {context.response.status_code}")
+        assert_that(context.response.status_code).is_equal_to(404)
+
+
+@then(u'FireBase_the response should contain an error message "Not Found"')
+def step_impl(context):
+    """Verify that the error message is 'Not Found' or 'Bad Request' based on the status code"""
+    response_json = context.response.json()
+
+    # Check if the status code is 400 (Bad Request) or 404 (Not Found)
+    if context.response.status_code == 400:
+        # If the status code is 400, verify the error message is "Bad Request"
+        logger.info(f"Expected error message: 'Bad Request', Got: {response_json.get('error')}")
+        assert_that(response_json.get("error")).is_equal_to("Bad Request")
+    else:
+        # If the status code is 404, verify the error message is "Not Found"
+        logger.info(f"Expected error message: 'Not Found', Got: {response_json.get('error')}")
+        assert_that(response_json.get("error")).is_equal_to("Not Found")
+
+
+@then(u'FireBase_the message should be "Environment with ID {env_id} not found for update."')
+def step_impl(context, env_id):
+    """Verify the specific error message for a non-existing environment"""
+    response_json = context.response.json()
+
+    # Handle the case when env_id is passed as "None" (string) specifically
+    if env_id == "None":
+        # Treat "None" as an empty string for validation
+        env_id = ""
+        logger.info(f"Expected message to contain 'Invalid input:', Got: {response_json.get('message')}")
+        # Verify the error message for invalid env_id (Bad Request)
+        assert_that(response_json.get("message")).contains("Invalid input:")
+    else:
+        # If the env_id is valid, verify the environment not found message
+        expected_message = f"Environment with ID {env_id} not found for update."
+        logger.info(f"Expected Message: {expected_message}, Response Message: {response_json.get('message')}")
+
+        # First check if the message contains "Invalid input:"
+        if "Invalid input:" in response_json.get("message"):
+            assert_that(response_json.get("message")).contains("Invalid input:")
+        else:
+            # If not, check for "not found"
+            assert_that(response_json.get("message")).contains("not found")
+
+########################### Scenario Outline: SQL injection attempt in the Update Environment API request ###########################
+
+@given(u'FireBase_User sends POST request to update environment details with "{env_id}" and "{env_name}" and "{env_description}"')
+def step_impl(context, env_id, env_name, env_description):
+    """Send POST request to update environment details with SQL injection payload"""
+    config = getConfig()
+    context.url = f"{config['API']['BaseURL']}/environments"
+
+    api_key = "AIzaSyCNI5CQeoAAfvQB07m2KGqDXLlgQKMg-aM"  # API key passed in the request header
+
+    context.headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': api_key
+    }
+
+    # Prepare the request body with malicious payload for SQL injection
+    payload = {
+        "env_id": env_id,
+        "env_name": env_name,
+        "env_description": env_description
+    }
+
+    # Send the POST request to update the environment
+    context.response = requests.post(context.url, json=payload, headers=context.headers)
+
+    # Log the response for visibility
+    logger.info(f"SQL Injection API Response: {context.response.text}")
+    print(f"SQL Injection API Response: {context.response.text}")  # Fallback to print in console
+
+@then(u'FireBase_the response should contain the error message "Bad Request" for SQL injection input')
+def step_impl(context):
+    """Verify that the response contains a "Bad Request" error message for SQL injection input"""
+    assert_that(context.response.status_code).is_equal_to(400)
+    logger.info(f"Expected error message: 'Bad Request', Got: {context.response.status_code}")
+    assert_that(context.response.json().get("error")).is_equal_to("Bad Request")
+
+@then(u'FireBase_the response message should contain "Invalid input:"')
+def step_impl(context):
+    """Verify that the response message contains 'Invalid input:' indicating SQL injection was detected"""
+    response_json = context.response.json()
+    logger.info(f"Expected message to contain 'Invalid input:', Got: {response_json.get('message')}")
+    assert_that(response_json.get("message")).contains("Invalid input:")

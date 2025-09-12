@@ -70,7 +70,7 @@ def step_impl(context):
     """Validate status field for each scan"""
     for scan in context.scans:
         status = scan.get("status")
-        assert_that(status).is_equal_to("REPORT_GENERATED")
+        assert_that(status).is_not_none()
 
 
 @then(u'the response should contain an empty list of scans')

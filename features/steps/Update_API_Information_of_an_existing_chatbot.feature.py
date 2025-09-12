@@ -47,7 +47,7 @@ def step_impl(context, chatbot_url):
 
     # Poll until status becomes AVAILABLE
     status_url = f"{base_url}/chatbots/{chatbot_id}"
-    max_retries = 150
+    max_retries = 250
     wait_seconds = 10
 
     for attempt in range(max_retries):

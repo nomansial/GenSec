@@ -156,6 +156,12 @@ def step_impl(context):
     # The response is already assigned in the previous given step, so no action needed here
     pass
 
+@when(u'FireBase_user receives the response')
+def step_impl(context):
+    """This step will handle the receiving of the response from the GET request"""
+    # The response is already assigned in the previous given step, so no action needed here
+    pass
+
 
 @then(u'the status code should be 400 for not found error')
 def step_impl(context):
